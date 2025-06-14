@@ -1,30 +1,54 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
+import { DataRepository } from './dataRepository';
 
 export interface Book {
-  id: number;
+  guid: string;
   title: string;
   author: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class BookService {
-  private books: Book[] = [
-    { id: 0, title: '1984', author: 'George Orwell' },
-    { id: 1, title: 'To Kill a Mockingbird', author: 'Harper Lee' },
-    { id: 2, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
-    { id: 3, title: 'Moby Dick', author: 'Herman Melville' }
-  ];
+  constructor(private dataRepository: DataRepository) {
+    this.loadBooks();
+  }
+  private books = signal<Book[]>([]);
+
+  loadBooks = () => {
+    this.dataRepository.getBooks().subscribe((books: Book[]) => {
+      this.books.set(books);
+      console.log('Getting books:', this.books);
+    });
+  };
 
   getBooks(): Book[] {
-    return this.books;
+    return this.books();
   }
 
-  addBook(book: Omit<Book, 'id'>) {
-    const id = this.books.length ? Math.max(...this.books.map(b => b.id)) + 1 : 0;
-    this.books.push({ id, ...book });
+  addBook(book: Omit<Book, 'guid'>) {
+    this.dataRepository.addBook(book).subscribe((newBook: Book) => {
+      this.books.update((currentBooks) => [...currentBooks, newBook]);
+      console.log('Updated books:', this.books());
+    });
   }
 
-  removeBook(id: number) {
-    this.books = this.books.filter(book => book.id !== id);
+  editBook(guid: string, updatedBook: Omit<Book, 'guid'>) {
+    const book = this.books().find((book) => book.guid === guid);
+    if (book) {
+      Object.assign(book, updatedBook);
+      this.dataRepository.updateBook(guid, book).subscribe();
+    }
+  }
+  removeBook(guid: string) {
+    this.dataRepository.deleteBook(guid).subscribe();
+    this.books.update((currentBooks) =>
+      currentBooks.filter((book) => book.guid !== guid)
+    );
+  }
+
+  getBookById(guid: string): Book | undefined {
+    return this.books().find((book) => book.guid === guid);
   }
 }
