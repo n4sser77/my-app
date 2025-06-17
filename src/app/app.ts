@@ -120,14 +120,14 @@ export class App {
       console.error('Passwords do not match');
       this.message = 'Passwords do not match';
       this.showLogin = true;
-      this.authMode = 'register';
+      this.authMode = this.authMode === 'register' ? 'register' : 'login';
       return;
     }
     if (!formData.username || !formData.password) {
       console.error('Username and password are required');
       this.message = 'Username and password are required';
       this.showLogin = true;
-      this.authMode = 'register';
+      this.authMode = this.authMode === 'register' ? 'register' : 'login';
       return;
     }
     if (this.authMode === 'register') {
