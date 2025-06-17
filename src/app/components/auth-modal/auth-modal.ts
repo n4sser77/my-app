@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -93,15 +93,15 @@ export class AuthModal {
     // Validate form inputs
 
     if (!this.username || !this.password) {
-      alert('Username and password are required!');
+      this.message = 'Username and password are required!';
       return;
     }
     if (this.mode === 'register' && this.password !== this.confirmPassword) {
-      alert('Passwords do not match!');
+      this.message = 'Passwords do not match!';
       return;
     }
 
-    alert(`Submitting form: ${this.mode} with username: ${this.username}`);
+    this.message = `Submitting form: ${this.mode} with username: ${this.username}`;
     this.submit.emit({
       username: this.username,
       password: this.password,
