@@ -94,10 +94,13 @@ export class AuthModal {
 
     if (!this.username || !this.password) {
       this.message = 'Username and password are required!';
+      this.mode = this.mode === 'register' ? 'register' : 'login';
+      this.reset();
       return;
     }
     if (this.mode === 'register' && this.password !== this.confirmPassword) {
       this.message = 'Passwords do not match!';
+      this.mode = this.mode === 'register' ? 'register' : 'login';
       return;
     }
 

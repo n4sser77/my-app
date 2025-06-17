@@ -147,7 +147,7 @@ export class App {
           console.error('Login failed', err);
           this.message = 'Login failed. Please check your credentials.';
           this.showLogin = true;
-          this.authMode = 'login';
+          this.authMode = this.authMode === 'register' ? 'register' : 'login';
         },
       });
     }
