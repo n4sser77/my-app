@@ -112,19 +112,19 @@ export class App {
     password: string;
     confirmPassword?: string;
   }) {
-    console.log('handle auth Form Data from event:', formData);
+    // console.log('handle auth Form Data from event:', formData);
     if (
       formData.password !== formData.confirmPassword &&
       this.authMode === 'register'
     ) {
-      console.error('Passwords do not match');
+      // console.error('Passwords do not match');
       this.message = 'Passwords do not match';
       this.showLogin = true;
       this.authMode = this.authMode === 'register' ? 'register' : 'login';
       return;
     }
     if (!formData.username || !formData.password) {
-      console.error('Username and password are required');
+      // console.error('Username and password are required');
       this.message = 'Username and password are required';
       this.showLogin = true;
       this.authMode = this.authMode === 'register' ? 'register' : 'login';
@@ -135,7 +135,7 @@ export class App {
     } else {
       this.http.post(`${this.baseUrl}/login`, formData).subscribe({
         next: (res: any) => {
-          console.log('Login response:', res);
+          // console.log('Login response:', res);
           if (res && res.token) {
             this.authService.saveToken(res.token); // save JWT
             this.showLogin = false;
@@ -144,7 +144,7 @@ export class App {
         },
         error: (err) => {
           // Handle 400, 401, etc.
-          console.error('Login failed', err);
+          // console.error('Login failed', err);
           this.message = 'Login failed. Please check your credentials.';
           this.showLogin = true;
           this.authMode = this.authMode === 'register' ? 'register' : 'login';
