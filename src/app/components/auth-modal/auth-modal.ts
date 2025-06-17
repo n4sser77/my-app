@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -61,6 +61,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
               <button class="btn btn-primary w-100">
                 {{ mode === 'register' ? 'Register' : 'Login' }}
               </button>
+
+              <span class="text-danger d-block mt-2" *ngIf="message">
+                {{ message }}
+              </span>
             </form>
           </div>
         </div>
@@ -72,6 +76,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 export class AuthModal {
   @Input() showModal = false;
   @Input() mode: 'login' | 'register' = 'login';
+  @Input() message: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<any>();
 

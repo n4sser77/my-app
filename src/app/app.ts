@@ -78,6 +78,8 @@ import { FormsModule } from '@angular/forms';
       [mode]="authMode"
       (submit)="handleAuth($event)"
       (close)="showLogin = false"
+      [message]="message"
+      class="position-fixed top-50 start-50 translate-middle"
     >
     </app-auth-modal>
 
@@ -100,6 +102,7 @@ import { FormsModule } from '@angular/forms';
 export class App {
   constructor(public authService: AuthService) {}
   private http = inject(HttpClient);
+  message: string = '';
   // DEVELOPMENT
   private baseUrl =
     'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net'; // Change port if needed
@@ -116,10 +119,16 @@ export class App {
       this.authMode === 'register'
     ) {
       console.error('Passwords do not match');
+      this.message = 'Passwords do not match';
+      this.showLogin = true;
+      this.authMode = 'register';
       return;
     }
     if (!formData.username || !formData.password) {
       console.error('Username and password are required');
+      this.message = 'Username and password are required';
+      this.showLogin = true;
+      this.authMode = 'register';
       return;
     }
     if (this.authMode === 'register') {
@@ -137,6 +146,9 @@ export class App {
         error: (err) => {
           // Handle 400, 401, etc.
           console.error('Login failed', err);
+          this.message = 'Login failed. Please check your credentials.';
+          this.showLogin = true;
+          this.authMode = 'login';
         },
       });
     }
