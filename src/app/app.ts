@@ -79,7 +79,6 @@ import { FormsModule } from '@angular/forms';
       (submit)="handleAuth($event)"
       (close)="showLogin = false"
       [message]="message"
-      class="position-fixed top-50 start-50 translate-middle"
     >
     </app-auth-modal>
 
