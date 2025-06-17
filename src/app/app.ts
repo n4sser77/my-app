@@ -100,7 +100,11 @@ import { FormsModule } from '@angular/forms';
 export class App {
   constructor(public authService: AuthService) {}
   private http = inject(HttpClient);
-  private baseUrl = 'https://localhost:7031'; // Change port if needed
+  // DEVELOPMENT
+  private baseUrl =
+    'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net'; // Change port if needed
+  // private baseUrl = 'https://localhost:7031'; // Change port if needed
+
   handleAuth(formData: {
     username: string;
     password: string;

@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { BookService, Book } from '../../services/bookService';
 import { BookForm } from '../../components/book-form/book-form';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-book-list',
@@ -12,7 +13,7 @@ import { BookForm } from '../../components/book-form/book-form';
   styleUrl: './book-list.css',
 })
 export class BookList {
-  constructor(private bookService: BookService) {}
+  constructor(private bookService: BookService, public authService: AuthService) {}
 
   showModal = false;
   editId: string | null = null;

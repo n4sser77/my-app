@@ -2,11 +2,12 @@
   <div class="mb-4">
     <h2 class="display-4 text-center">Books</h2>
 
-    <app-book-form></app-book-form>
+    <app-book-form *ngIf="authService.isAuthenticated()"></app-book-form>
   </div>
 
   <!-- Edit Book Modal -->
   <div
+    *ngIf="authService.isAuthenticated()"
     class="modal fade"
     tabindex="-1"
     [class.show]="showModal"
@@ -42,7 +43,7 @@
                 placeholder="Author"
               />
             </div>
-            <button  class="btn btn-primary">Save</button>
+            <button class="btn btn-primary">Save</button>
           </form>
         </div>
       </div>
@@ -52,10 +53,10 @@
   <table class="table table-striped table-hover">
     <thead class="table-dark">
       <tr>
-        <th>I#</th>
+        <th>Id#</th>
         <th>Title</th>
         <th>Author</th>
-        <th>Actions</th>
+        <th *ngIf="authService.isAuthenticated()">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -66,7 +67,7 @@
         <td class="font-weight-bold">{{book.title}}</td>
         <td>{{book.author}}</td>
 
-        <td>
+        <td *ngIf="authService.isAuthenticated()">
           <div class="btn-group" role="group">
             <button
               class="btn btn-primary btn-sm m-1"

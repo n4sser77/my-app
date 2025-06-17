@@ -3,7 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { QuoteService } from '../../services/quoteService';
 import { Quote } from '../../services/quoteService';
-import { QuoteForm } from "../../components/quote-form/quote-form";
+import { QuoteForm } from '../../components/quote-form/quote-form';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-quote-list',
@@ -12,7 +13,10 @@ import { QuoteForm } from "../../components/quote-form/quote-form";
   styleUrl: './quote-list.css',
 })
 export class QuoteList {
-  constructor(private quoteService: QuoteService) {}
+  constructor(
+    private quoteService: QuoteService,
+    public authService: AuthService
+  ) {}
 
   showModal = false;
   editId: string | null = null;
