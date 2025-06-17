@@ -101,6 +101,7 @@ export class AuthModal {
     if (this.mode === 'register' && this.password !== this.confirmPassword) {
       this.message = 'Passwords do not match!';
       this.mode = this.mode === 'register' ? 'register' : 'login';
+      this.reset();
       return;
     }
 
