@@ -52,7 +52,7 @@ import { delay } from 'rxjs';
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
                 class="btn btn-outline-light"
-                (click)="showLogin.set(true); authMode = 'login'"
+                (click)="showLogin.set(true); authMode.set('login')"
               >
                 Login
               </button>
@@ -60,7 +60,7 @@ import { delay } from 'rxjs';
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
                 class="btn btn-outline-light"
-                (click)="showLogin.set(true); authMode = 'register'"
+                (click)="showLogin.set(true); authMode.set('register')"
               >
                 Register
               </button>
@@ -79,7 +79,7 @@ import { delay } from 'rxjs';
     </nav>
     <app-auth-modal
       [showModal]="showLogin()"
-      [mode]="authMode"
+      [mode]="authMode()"
       (submit)="handleAuth($event)"
       (close)="showLogin.set(false); message.set('')"
       [message]="message()"
@@ -108,7 +108,7 @@ export class App {
   constructor(public authService: AuthService) {}
   protected title = 'my-app';
   showLogin = signal(false);
-  authMode: 'login' | 'register' = 'login';
+  authMode = signal<'login' | 'register'>('login');
   private http = inject(HttpClient);
   isSendingRequest = signal(false);
   message = signal('');
@@ -126,13 +126,13 @@ export class App {
     // console.log('handle auth Form Data from event:', formData);
     if (
       formData.password !== formData.confirmPassword &&
-      this.authMode === 'register' &&
+      this.authMode() === 'register' &&
       !this.isSendingRequest()
     ) {
       // console.error('Passwords do not match');
       this.message.set('Passwords do not match');
 
-      this.authMode = this.authMode === 'register' ? 'register' : 'login';
+      this.authMode.set(this.authMode() === 'register' ? 'register' : 'login');
       return;
     }
     if (
@@ -142,19 +142,33 @@ export class App {
       // console.error('Username and password are required');
       this.message.set('Username and password are required');
 
-      this.authMode = this.authMode === 'register' ? 'register' : 'login';
+      this.authMode.set(this.authMode() === 'register' ? 'register' : 'login');
       return;
     }
 
     // if this point is reached a request will be sent
     this.isSendingRequest.set(true);
 
-    if (this.authMode === 'register') {
+    if (this.authMode() === 'register') {
       this.message.set('Registering...');
-      this.http.post(`${this.baseUrl}/register`, formData).subscribe();
+      this.http.post(`${this.baseUrl}/register`, formData).subscribe({
+        next: (res: any) => {
+          if (res && res.status === 200) {
+            this.message.set(res.message);
+            this.authMode.set('login');
+          }
+        },
+        error: (err) => {
+          this.message.set(err.error);
+
+          this.authMode.set(
+            this.authMode() === 'register' ? 'register' : 'login'
+          );
+        },
+      });
     }
 
-    if (this.authMode === 'login') {
+    if (this.authMode() === 'login') {
       this.message.set('Logging in...');
       this.http.post(`${this.baseUrl}/login`, formData).subscribe({
         next: (res: any) => {
@@ -175,7 +189,9 @@ export class App {
           // console.error('Login failed', err);
           this.message.set(err.error);
 
-          this.authMode = this.authMode === 'register' ? 'register' : 'login';
+          this.authMode.set(
+            this.authMode() === 'register' ? 'register' : 'login'
+          );
         },
       });
     }
