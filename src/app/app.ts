@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
+import { Component, inject, signal, ViewEncapsulation, effect } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthModal } from './components/auth-modal/auth-modal';
@@ -112,6 +112,8 @@ export class App {
   private http = inject(HttpClient);
   isSendingRequest = signal(false);
   message = signal('');
+
+  
 
   // DEVELOPMENT
   private baseUrl =

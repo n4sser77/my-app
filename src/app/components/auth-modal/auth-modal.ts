@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -80,9 +80,9 @@ export class AuthModal {
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<any>();
 
-  username = '';
-  password = '';
-  confirmPassword = '';
+  username = signal('');
+  password = signal('');
+  confirmPassword = signal('');
   constructor() {}
 
   ngOnChanges() {
@@ -95,6 +95,7 @@ export class AuthModal {
   closeModal() {
     this.close.emit();
     this.reset();
+    this.message = '';
   }
 
   onSubmit() {
@@ -110,8 +111,8 @@ export class AuthModal {
   }
 
   private reset() {
-    this.username = '';
-    this.password = '';
-    this.confirmPassword = '';
+    this.username.set('');
+    this.password.set('');
+    this.confirmPassword.set('');
   }
 }
