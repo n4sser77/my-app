@@ -11,8 +11,7 @@ export class DataRepository {
   private http = inject(HttpClient);
   //DEVELOPMENT
   // private baseUrl = 'https://localhost:7031'; // Change port if needed
-  private baseUrl =
-    'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net';
+  private baseUrl = 'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net';
 
   // BOOKS
   getBooks(): Observable<Book[]> {

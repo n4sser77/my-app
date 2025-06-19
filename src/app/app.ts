@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthModal } from './components/auth-modal/auth-modal';
@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from './services/auth';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { delay } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -17,8 +18,11 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     FormsModule,
   ],
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg ">
       <div class="container-fluid">
         <a class="navbar-brand" routerLink="/">My Angular App</a>
         <button
@@ -48,7 +52,7 @@ import { FormsModule } from '@angular/forms';
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
                 class="btn btn-outline-light"
-                (click)="showLogin = true; authMode = 'login'"
+                (click)="showLogin.set(true); authMode = 'login'"
               >
                 Login
               </button>
@@ -56,7 +60,7 @@ import { FormsModule } from '@angular/forms';
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
                 class="btn btn-outline-light"
-                (click)="showLogin = true; authMode = 'register'"
+                (click)="showLogin.set(true); authMode = 'register'"
               >
                 Register
               </button>
@@ -74,14 +78,16 @@ import { FormsModule } from '@angular/forms';
       </div>
     </nav>
     <app-auth-modal
-      [showModal]="showLogin"
+      [showModal]="showLogin()"
       [mode]="authMode"
       (submit)="handleAuth($event)"
-      (close)="showLogin = false"
-      [message]="message"
+      (close)="showLogin.set(false); message.set('')"
+      [message]="message()"
     >
     </app-auth-modal>
-
+    <div role="alert" class="alert alert-secondary  text-center py-2">
+      {{ message() }}
+    </div>
     <main
       class="container mt-4 mh-100 d-flex flex-column"
       style="min-height: 69.3vh"
@@ -100,8 +106,13 @@ import { FormsModule } from '@angular/forms';
 })
 export class App {
   constructor(public authService: AuthService) {}
+  protected title = 'my-app';
+  showLogin = signal(false);
+  authMode: 'login' | 'register' = 'login';
   private http = inject(HttpClient);
-  message: string = '';
+  isSendingRequest = signal(false);
+  message = signal('');
+
   // DEVELOPMENT
   private baseUrl =
     'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net'; // Change port if needed
@@ -115,44 +126,60 @@ export class App {
     // console.log('handle auth Form Data from event:', formData);
     if (
       formData.password !== formData.confirmPassword &&
-      this.authMode === 'register'
+      this.authMode === 'register' &&
+      !this.isSendingRequest()
     ) {
       // console.error('Passwords do not match');
-      this.message = 'Passwords do not match';
-      this.showLogin = true;
+      this.message.set('Passwords do not match');
+
       this.authMode = this.authMode === 'register' ? 'register' : 'login';
       return;
     }
-    if (!formData.username || !formData.password) {
+    if (
+      (!formData.username || !formData.password) &&
+      !this.isSendingRequest()
+    ) {
       // console.error('Username and password are required');
-      this.message = 'Username and password are required';
-      this.showLogin = true;
+      this.message.set('Username and password are required');
+
       this.authMode = this.authMode === 'register' ? 'register' : 'login';
       return;
     }
+
+    // if this point is reached a request will be sent
+    this.isSendingRequest.set(true);
+
     if (this.authMode === 'register') {
+      this.message.set('Registering...');
       this.http.post(`${this.baseUrl}/register`, formData).subscribe();
-    } else {
+    }
+
+    if (this.authMode === 'login') {
+      this.message.set('Logging in...');
       this.http.post(`${this.baseUrl}/login`, formData).subscribe({
         next: (res: any) => {
           // console.log('Login response:', res);
           if (res && res.token) {
             this.authService.saveToken(res.token); // save JWT
-            this.showLogin = false;
-            this.authMode = 'login';
+            this.showLogin.set(false);
+
+            // Optionally, you can navigate to a different page after login
+            // this.router.navigate(['/books']);
+          }
+          if (res && res.message) {
+            this.message.set(res.message); // Handle any message from the server
           }
         },
         error: (err) => {
           // Handle 400, 401, etc.
           // console.error('Login failed', err);
-          this.message = 'Login failed. Please check your credentials.';
-          this.showLogin = true;
+          this.message.set(err.error);
+
           this.authMode = this.authMode === 'register' ? 'register' : 'login';
         },
       });
     }
+    // request is finished
+    this.isSendingRequest.set(false);
   }
-  protected title = 'my-app';
-  showLogin: boolean = false;
-  authMode: 'login' | 'register' = 'login';
 }

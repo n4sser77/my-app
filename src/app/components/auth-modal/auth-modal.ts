@@ -83,6 +83,14 @@ export class AuthModal {
   username = '';
   password = '';
   confirmPassword = '';
+  constructor() {}
+
+  ngOnChanges() {
+    // Reset form fields when the modal is shown or mode changes
+    if (this.showModal || this.mode) {
+      this.reset();
+    }
+  }
 
   closeModal() {
     this.close.emit();
@@ -92,20 +100,6 @@ export class AuthModal {
   onSubmit() {
     // Validate form inputs
 
-    if (!this.username || !this.password) {
-      this.message = 'Username and password are required!';
-      this.mode = this.mode === 'register' ? 'register' : 'login';
-      this.reset();
-      return;
-    }
-    if (this.mode === 'register' && this.password !== this.confirmPassword) {
-      this.message = 'Passwords do not match!';
-      this.mode = this.mode === 'register' ? 'register' : 'login';
-      this.reset();
-      return;
-    }
-
-    this.message = `Submitting form: ${this.mode} with username: ${this.username}`;
     this.submit.emit({
       username: this.username,
       password: this.password,

@@ -1,7 +1,52 @@
 <div class="container mt-5">
   <div class="mb-4">
     <h2 class="display-4 text-center">Quotes</h2>
-      <app-quote-form *ngIf="authService.isAuthenticated()"></app-quote-form>
+    <app-quote-form *ngIf="authService.isAuthenticated()"></app-quote-form>
+  </div>
+
+  <!-- Edit Book Modal -->
+  <div
+    *ngIf="authService.isAuthenticated()"
+    class="modal fade"
+    tabindex="-1"
+    [class.show]="showModal"
+    [style.display]="showModal ? 'block' : 'none'"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Quote</h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closeModal()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="saveEdit()">
+            <div class="mb-2">
+              <input
+                class="form-control"
+                [(ngModel)]="editText"
+                name="editText"
+                placeholder="Text"
+              />
+            </div>
+            <div class="mb-2">
+              <input
+                class="form-control"
+                [(ngModel)]="editAuthor"
+                name="editAuthor"
+                placeholder="Author"
+              />
+            </div>
+            <button class="btn btn-primary">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Quote List -->
