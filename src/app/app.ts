@@ -1,4 +1,10 @@
-import { Component, inject, signal, ViewEncapsulation, effect } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  ViewEncapsulation,
+  effect,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthModal } from './components/auth-modal/auth-modal';
@@ -51,7 +57,7 @@ import { delay } from 'rxjs';
           <div class="btn-group ">
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
-                class="btn btn-outline-light"
+                class="btn btn-outline-light text-dark"
                 (click)="showLogin.set(true); authMode.set('login')"
               >
                 Login
@@ -59,7 +65,7 @@ import { delay } from 'rxjs';
             </div>
             <div *ngIf="!authService.isAuthenticated()" class="nav-item ms-2">
               <button
-                class="btn btn-outline-light"
+                class="btn btn-outline-light text-dark"
                 (click)="showLogin.set(true); authMode.set('register')"
               >
                 Register
@@ -67,7 +73,7 @@ import { delay } from 'rxjs';
             </div>
             <div *ngIf="authService.isAuthenticated()" class="nav-item ms-2">
               <button
-                class="btn btn-outline-light"
+                class="btn btn-dark text-white border border-light"
                 (click)="authService.logout()"
               >
                 Logout
@@ -85,7 +91,7 @@ import { delay } from 'rxjs';
       [message]="message()"
     >
     </app-auth-modal>
-    <div role="alert" class="alert alert-secondary  text-center py-2">
+    <div *ngIf="message()" role="alert" [ngClass]="messageType() === 'success' ? 'alert alert-success text-center py-2' : 'alert alert-danger text-center py-2'">
       {{ message() }}
     </div>
     <main
@@ -112,92 +118,77 @@ export class App {
   private http = inject(HttpClient);
   isSendingRequest = signal(false);
   message = signal('');
-
-  
+  messageType = signal<'success' | 'error'>('success');
 
   // DEVELOPMENT
-  private baseUrl =
-    'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net'; // Change port if needed
-  // private baseUrl = 'https://localhost:7031'; // Change port if needed
+  // private baseUrl = 'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net';
+
+  private baseUrl = 'https://localhost:7031';
 
   handleAuth(formData: {
     username: string;
     password: string;
     confirmPassword?: string;
   }) {
-    // console.log('handle auth Form Data from event:', formData);
+    // Clear previous messages
+    this.message.set('');
+    this.messageType.set('success');
+
+    if (!formData.username || !formData.password) {
+      this.message.set('Username and password are required.');
+      this.messageType.set('error');
+      return;
+    }
+
     if (
-      formData.password !== formData.confirmPassword &&
       this.authMode() === 'register' &&
-      !this.isSendingRequest()
+      formData.password !== formData.confirmPassword
     ) {
-      // console.error('Passwords do not match');
-      this.message.set('Passwords do not match');
-
-      this.authMode.set(this.authMode() === 'register' ? 'register' : 'login');
-      return;
-    }
-    if (
-      (!formData.username || !formData.password) &&
-      !this.isSendingRequest()
-    ) {
-      // console.error('Username and password are required');
-      this.message.set('Username and password are required');
-
-      this.authMode.set(this.authMode() === 'register' ? 'register' : 'login');
+      this.message.set('Passwords do not match.');
+      this.messageType.set('error');
       return;
     }
 
-    // if this point is reached a request will be sent
     this.isSendingRequest.set(true);
 
     if (this.authMode() === 'register') {
-      this.message.set('Registering...');
-      this.http.post(`${this.baseUrl}/register`, formData).subscribe({
+      this.http.post(`${this.baseUrl}/register`, formData, { responseType: 'text' }).subscribe({
         next: (res: any) => {
-          if (res && res.status === 200) {
-            this.message.set(res.message);
-            this.authMode.set('login');
-          }
+          this.message.set('Registration successful! You can now log in.');
+          this.messageType.set('success');
+          this.authMode.set('login');
+          this.isSendingRequest.set(false);
         },
         error: (err) => {
-          this.message.set(err.error);
-
-          this.authMode.set(
-            this.authMode() === 'register' ? 'register' : 'login'
-          );
+          this.message.set(typeof err.error === 'string' ? err.error : 'Registration failed.');
+          this.messageType.set('error');
+          this.isSendingRequest.set(false);
         },
       });
+      return;
     }
 
     if (this.authMode() === 'login') {
-      this.message.set('Logging in...');
       this.http.post(`${this.baseUrl}/login`, formData).subscribe({
         next: (res: any) => {
-          // console.log('Login response:', res);
           if (res && res.token) {
             this.authService.saveToken(res.token); // save JWT
             this.showLogin.set(false);
-
-            // Optionally, you can navigate to a different page after login
-            // this.router.navigate(['/books']);
+            this.message.set('Login successful!');
+            this.messageType.set('success');
+          } else {
+            this.message.set('Login failed: No token received.');
+            this.messageType.set('error');
           }
-          if (res && res.message) {
-            this.message.set(res.message); // Handle any message from the server
-          }
+          this.isSendingRequest.set(false);
         },
         error: (err) => {
-          // Handle 400, 401, etc.
-          // console.error('Login failed', err);
-          this.message.set(err.error);
-
-          this.authMode.set(
-            this.authMode() === 'register' ? 'register' : 'login'
-          );
+          this.message.set(typeof err.error === 'string' ? err.error : 'Login failed.');
+          this.messageType.set('error');
+          this.isSendingRequest.set(false);
         },
       });
+      return;
     }
-    // request is finished
-    this.isSendingRequest.set(false);
   }
 }

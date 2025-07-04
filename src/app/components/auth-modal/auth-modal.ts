@@ -1,11 +1,17 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+
+interface AuthData {
+  username: string;
+  password: string;
+  confirmPassword?: string;
+}
 
 @Component({
   selector: 'app-auth-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div
       class="modal fade"
@@ -58,7 +64,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
                   required
                 />
               </div>
-              <button class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100">
                 {{ mode === 'register' ? 'Register' : 'Login' }}
               </button>
 
@@ -78,29 +84,22 @@ export class AuthModal {
   @Input() mode: 'login' | 'register' = 'login';
   @Input() message: string = '';
   @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<any>();
 
-  username = signal('');
-  password = signal('');
-  confirmPassword = signal('');
+  @Output() submit = new EventEmitter<AuthData>();
+
+  username: string = '';
+  password: string = '';
+  confirmPassword: string = '';
   constructor() {}
-
-  ngOnChanges() {
-    // Reset form fields when the modal is shown or mode changes
-    if (this.showModal || this.mode) {
-      this.reset();
-    }
-  }
 
   closeModal() {
     this.close.emit();
     this.reset();
     this.message = '';
+    this.showModal = false;
   }
 
   onSubmit() {
-    // Validate form inputs
-
     this.submit.emit({
       username: this.username,
       password: this.password,
@@ -111,8 +110,8 @@ export class AuthModal {
   }
 
   private reset() {
-    this.username.set('');
-    this.password.set('');
-    this.confirmPassword.set('');
+    this.username = '';
+    this.password = '';
+    this.confirmPassword = '';
   }
 }

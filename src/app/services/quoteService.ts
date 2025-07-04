@@ -40,9 +40,11 @@ export class QuoteService {
   }
 
   removeQuote(guid: string) {
-    this.quotes.update((currentQuotes) =>
-      currentQuotes.filter((q) => q.guid !== guid)
-    );
+    this.dataRepository.deleteQuote(guid).subscribe(() => {
+      this.quotes.update((currentQuotes) =>
+        currentQuotes.filter((q) => q.guid !== guid)
+      );
+    });
   }
   getQuoteById(guid: string): Quote | undefined {
     return this.quotes().find((q) => q.guid === guid);
