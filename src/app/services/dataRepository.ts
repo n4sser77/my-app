@@ -1,18 +1,17 @@
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Quote } from './quoteService';
 import { Book } from './bookService';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataRepository {
   private http = inject(HttpClient);
-  //DEVELOPMENT
-  // private baseUrl = 'https://localhost:7031'; // Change port if needed
-  private baseUrl =
-    'https://bookquotesapi-e8hyd6gxfnfedqaf.swedencentral-01.azurewebsites.net';
+  private baseUrl = environment.apiBaseUrl;
 
   // BOOKS
   getBooks(): Observable<Book[]> {
